@@ -1,6 +1,6 @@
 {
   "server": {
-    "port": "3000"
+    "port": "80"
   },
   "app": {
     "jwt_secret": "anything you want here"
