@@ -1,0 +1,36 @@
+{
+  "server": {
+    "port": "3000"
+  },
+  "app": {
+    "jwt_secret": "anything you want here"
+  },
+  "client": {
+    "app_id": "",
+    "app_secret": ""
+  },
+  "database": {
+    "username": "nodejs",
+    "password": "123456",
+    "database": "fitness",
+    "host": "45.122.220.157",
+    "port":"6632",
+    "dialect": "postgres",
+    "define": {
+      "underscored": true
+    }
+  },
+  "schedule": {
+    "limitDate": 2,
+    "beginnerTime": 14,
+    "maxMusclePerDay": 3,
+    "frequencyRange": 90,
+    "beginerFactor": 1,
+    "limitDateFactor": -2,
+    "sameTypeFactor": 1.5,
+    "moreTypeFactor": 1,
+    "likeFactor": 1,
+    "frequencyFactor": 0.5,
+    "minkowski_p": 0.5
+  }
+}

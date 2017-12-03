@@ -1,0 +1,33 @@
+{
+  "include": [
+    "src/**/*.ts"
+  ],
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "dist",
+    "sourceMap": true,
+    "target": "ES2017",
+    "moduleResolution": "node",
+    "baseUrl": "src", // URL FIX 'src/comp1' TO  @import 'comp1'
+    "paths": {
+      "*": [
+        "*", //Paths
+        "modules/*"
+      ]
+    },
+    "lib" : [
+      "es7"
+    ],
+    "types": [
+      // add node as an option
+      "node"
+    ],
+    "typeRoots": [
+      // add path to @types
+      "node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "node_modules"
+  ]
+}

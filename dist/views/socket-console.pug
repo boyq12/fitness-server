@@ -1,0 +1,204 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    title Socket IO console
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css", integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb", crossorigin="anonymous")
+    style(media="screen").
+      .card-body {
+        max-height: 300px;
+        overflow-y: scroll;
+      }
+
+      .btn-pink {
+        color: #721c24;
+        border-color: #f5c6cb;
+        background-color: #f5c6cb;
+      }
+  body
+    #app.container
+      .col-12
+        h1.text-center Socket IO client console
+      div(v-if="!login")
+        form(v-on:submit="connectSocket")
+          .form-group
+            label Socket server
+            input.form-control(placeholder="http://localhost:3000", v-model="url")
+          .form-group
+            label token
+            input.form-control(placeholder="Password", v-model="token")
+          button.btn.btn-pink(type="submit") Submit
+      .row(v-if="login")
+        .col-6
+          form(v-on:submit="emit")
+            .form-group.col-sm-6
+              label event
+              input.form-control(placeholder="event", v-model="event")
+            .form-group.col-sm-6
+              label data
+              input.form-control(placeholder="json data", v-model="data")
+            .col-sm-12
+              button.btn.btn-pink(type="submit") Submit
+          hr
+          div
+            .card
+              .card-body
+                .list-group
+                  li(v-bind:class="{ 'list-group-item': true, 'list-group-item-danger': index == 0 }", v-for="(result, index) of emitResult")
+                    small
+                      timeago(:since="result.time")
+                    code {{result.data}}
+        .col-6
+          form(v-on:submit="listen")
+            .form-group
+              label Event
+              input.form-control(placeholder="event", v-model="listen_event")
+            button.btn.btn-pink(type="submit") Submit
+          hr
+          div
+            .card(v-for="event of listen_data")
+              .card-header
+                | {{event.event}}
+              .card-body
+                .list-group
+                  li(v-bind:class="{ 'list-group-item': true, 'list-group-item-danger': index == 0 }", v-for="(data, index) of event.data")
+                    small
+                      timeago(:since="data.time")
+                    code {{data.data}}
+  script(src="https://code.jquery.com/jquery-3.2.1.slim.min.js", integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN", crossorigin="anonymous")
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js", integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh", crossorigin="anonymous")
+  script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js", integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ", crossorigin="anonymous")
+  script(src="https://unpkg.com/vue")
+  script(src="https://unpkg.com/vue-timeago@3.4.0/dist/vue-timeago.js", charset="utf-8")
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js", charset="utf-8")
+  script(type="text/javascript").
+    Vue.use(VueTimeago, {
+      name: 'timeago', // component name, `timeago` by default
+      locale: 'vi-VN',
+      locales: {
+        // you will need json-loader in webpack 1
+        'vi-VN': [
+          "vừa rồi",
+          "%s giây trước",
+          "%s phút trước",
+          "%s giờ trước",
+          "%s ngày trước",
+          "%s tuần trước",
+          "%s tháng trước",
+          "%s năm trước"
+        ]
+      }
+    })
+    var app = new Vue({
+      el: '#app',
+      data: {
+        login: false,
+        socket: null,
+        url: '',
+        token: '',
+        event: '',
+        data: '',
+        emitResult: [],
+        listen_event: '',
+        listen_data: []
+      },
+      created: function () {
+        let url = window.localStorage.getItem('url');
+        let token = window.localStorage.getItem('token');
+        if (url) {
+          this.url = url;
+        }
+        if (token) {
+          this.token = token;
+        }
+      },
+      methods: {
+        connectSocket: function (e) {
+          e.preventDefault();
+          if (this.socket) {
+            this.socket.disconnect();
+          }
+          this.socket = io(this.url);
+          this.socket.on('reconnect', data => {
+            this.loginSocket();
+        })
+          this.loginSocket();
+        },
+        loginSocket: function () {
+          this.socket.emit("login", {
+            token: this.token
+          }, (res) => {
+            if(res.success
+        )
+          {
+            this.login = true;
+            window.localStorage.setItem('url', this.url);
+            window.localStorage.setItem('token', this.token);
+          }
+        else
+          {
+            alert("Login fail");
+          }
+        })
+          ;
+        },
+        emit: function (e) {
+          e.preventDefault();
+          let data = this.data;
+          try {
+            data = JSON.parse(data);
+          } catch (e) {
+          }
+          if (typeof data == 'string') {
+            data = {
+              data: data,
+              token: this.token
+            }
+          } else {
+            data.token = this.token
+          }
+          this.socket.emit(this.event, data, (res) => {
+            this.emitResult.unshift({
+            time: new Date(),
+            data: res
+          });
+        })
+          ;
+        },
+        listen: function (e) {
+          e.preventDefault();
+          let listen_event = this.listen_event;
+          if (this.socket) {
+            let isAdded = false;
+            this.listen_data.forEach(data => {
+              isAdded = isAdded || data.event == listen_event;
+          })
+            ;
+            if (!isAdded) {
+              this.listen_data.unshift({
+                event: listen_event,
+                data: []
+              });
+            }
+            // this.listen_data = this.listen_data.filter(data => data.event != listen_event);
+            this.socket.off(listen_event);
+            this.socket.on(listen_event, data => this.handleSocketEvent(listen_event, data)
+          )
+            ;
+          }
+        },
+        handleSocketEvent(event, data) {
+          this.listen_data.forEach(d => {
+            if(d.event == event
+        )
+          {
+            d.data.unshift({
+              time: new Date(),
+              data
+            });
+          }
+        })
+          ;
+        }
+      }
+    });
