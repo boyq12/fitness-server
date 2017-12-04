@@ -1,4 +1,4 @@
-{
+{ 
   "app": {
     "jwt_secret": "anything you want here"
   },
