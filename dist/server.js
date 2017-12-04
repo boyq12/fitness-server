@@ -15,7 +15,7 @@ var logger = new logger_1.Logger({
 var app = new App_1.default({
     routePath: './routes/index',
     debug: 'coupon',
-    port: config.server.port,
+    port: process.env.PORT || config.server.port,
     publicDirs: [{
             route: '/assets',
             path: '../client/dist/assets'
